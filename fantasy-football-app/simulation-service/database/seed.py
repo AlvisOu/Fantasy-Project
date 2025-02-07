@@ -38,15 +38,26 @@ def seed_database():
 
     for id in player_ids:
         player = fetch_external_data(id)
-        new_player = PlayerData(
-            player_name=player['name'],
-            position=player['position'],
-            team=player['team'],
-            projected_score=player['projected_score'],
-            boom_probability=player['boom_probability'],
-            bust_probability=player['bust_probability']
-        )
-        session.add(new_player)
+
+        existing_player = session.query(PlayerData).filter_by(player_name=player['name']).first()
+        
+        if existing_player:
+            existing_player['projected_score'] = player['projected_score']
+            existing_player['boom_probability'] = player['boom_probability']
+            existing_player['bust_probability'] = player['bust_probability']
+            print(f"Updated player data for {player['name']}")
+
+        else:
+            new_player = PlayerData(
+                player_name=player['name'],
+                position=player['position'],
+                team=player['team'],
+                projected_score=player['projected_score'],
+                boom_probability=player['boom_probability'],
+                bust_probability=player['bust_probability']
+            )
+            session.add(new_player)
+            print(f"Added player data for {player['name']}")
 
     session.commit()
     session.close()
