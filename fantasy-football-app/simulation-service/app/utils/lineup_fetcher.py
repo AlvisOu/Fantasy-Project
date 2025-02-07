@@ -31,19 +31,21 @@ def fetch_fantasy_lineup(team_id):
         if team["id"] != team_id:
             continue
         for player in team["roster"]["entries"]:
-
+            lineup_status = "IR"
+            injury_status = player["playerPoolEntry"]["player"].get("injuryStatus", "")
             if player["lineupSlotId"] not in [20, 21]:
-                line_up[player["playerId"]] = 1
-                print(f"Started {player["playerPoolEntry"]["player"]["fullName"]}.")
+                lineup_status = "Starting"
+                # print(f"Started {player["playerPoolEntry"]["player"]["fullName"]}.")
 
             elif player["lineupSlotId"] == 20:
-                line_up[player["playerId"]] = 0
-                print(f"Benched {player["playerPoolEntry"]["player"]["fullName"]}.")
+                lineup_status = "Benched"
+                # print(f"Benched {player["playerPoolEntry"]["player"]["fullName"]}.")
 
-            else:
-                line_up[player["playerId"]] = -1
-                print(f"Had {player["playerPoolEntry"]["player"]["fullName"]} on IR.")
-        print("\n")
+            # else:
+            #     print(f"Had {player["playerPoolEntry"]["player"]["fullName"]} on IR.")
+            
+            line_up[player["playerId"]] = (lineup_status, injury_status)
+        # print("\n")
 
     return line_up
 
@@ -53,8 +55,8 @@ def main():
     args = parser.parse_args()
 
     res = fetch_fantasy_lineup(args.team_id)
-    for player, status in res.items():
-        print(f"Player ID: {player}, Status: {status}")
+    # for player, status in res.items():
+    #     print(f"Player ID: {player}, Status: {status}")
 
 
 if __name__ == "__main__":

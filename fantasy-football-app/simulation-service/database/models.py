@@ -15,6 +15,8 @@ class PlayerData(Base):
     projected_score = Column(Float, nullable=False)
     boom_probability = Column(Float, nullable=False)
     bust_probability = Column(Float, nullable=False)
+    lineup_status = Column(String(50), nullable=False)
+    injury_status = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.now)
 
 DATABASE_URL = "mysql+mysqlconnector://user:password@localhost:3307/fantasy_db"

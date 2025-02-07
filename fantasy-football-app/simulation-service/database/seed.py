@@ -1,6 +1,7 @@
-import requests
+import requests, argparse
 from models import SessionLocal, PlayerData
 from db_setup import init_db
+from ..app.utils.lineup_fetcher import fetch_fantasy_lineup
 
 team_hashmap = {
     '8': "Detroit Lions",
@@ -45,6 +46,8 @@ def seed_database(player_ids):
             existing_player['projected_score'] = player['projected_score']
             existing_player['boom_probability'] = player['boom_probability']
             existing_player['bust_probability'] = player['bust_probability']
+            existing_player["lineup_status"] = player_ids[id][0]
+            existing_player["injury_status"] = player_ids[id][1]
             print(f"Updated player data for {player['name']}")
 
         else:
@@ -55,7 +58,9 @@ def seed_database(player_ids):
                 team=player['team'],
                 projected_score=player['projected_score'],
                 boom_probability=player['boom_probability'],
-                bust_probability=player['bust_probability']
+                bust_probability=player['bust_probability'],
+                lineup_status=player_ids[id][0],
+                injury_status=player_ids[id][1]
             )
             session.add(new_player)
             print(f"Added player data for {player['name']}")
@@ -64,5 +69,12 @@ def seed_database(player_ids):
     session.close()
     print("Database seeded with player data!")
 
+def main():
+    parser = argparse.ArgumentParser(description='Fetch a fantasy lineup.')
+    parser.add_argument('team_id', type=int, help='The team ID of the fantasy lineup to fetch.')
+    args = parser.parse_args()
+
+    seed_database(fetch_fantasy_lineup(args.team_id))
+
 if __name__ == "__main__":
-    seed_database()
+    main()
