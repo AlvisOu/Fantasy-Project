@@ -10,6 +10,7 @@ def fetch_external_data(player_id):
     """Fetch player data from an external API given a player ID."""
     current_year = 2024
     player = {}
+    player['id'] = player_id
 
     player_url = f"https://watsonfantasyfootball.espn.com/espnpartner/dallas/players/players_{player_id}_ESPNFantasyFootball_{current_year}.json"
     player_response = requests.get(player_url)
@@ -30,17 +31,16 @@ def fetch_external_data(player_id):
 
     return player
 
-def seed_database():
+def seed_database(player_ids):
     """Seed the database with player data."""
-    player_ids = []
     init_db()
     session = SessionLocal()
 
     for id in player_ids:
         player = fetch_external_data(id)
 
-        existing_player = session.query(PlayerData).filter_by(player_name=player['name']).first()
-        
+        existing_player = session.query(PlayerData).filter_by(id=player['id']).first()
+
         if existing_player:
             existing_player['projected_score'] = player['projected_score']
             existing_player['boom_probability'] = player['boom_probability']
@@ -49,6 +49,7 @@ def seed_database():
 
         else:
             new_player = PlayerData(
+                id=player['id'],
                 player_name=player['name'],
                 position=player['position'],
                 team=player['team'],

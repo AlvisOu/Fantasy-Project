@@ -8,7 +8,7 @@ Base = declarative_base()
 class PlayerData(Base):
     __tablename__ = 'player_data'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    player_id = Column(Integer, primary_key=True)
     player_name = Column(String(100), nullable=False)
     position = Column(String(50), nullable=False)
     team = Column(String(50), nullable=False)
