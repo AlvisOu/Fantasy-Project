@@ -32,7 +32,7 @@ def fetch_fantasy_lineup(team_id):
             continue
         for player in team["roster"]["entries"]:
             lineup_status = "IR"
-            injury_status = player["playerPoolEntry"]["player"].get("injuryStatus", "")
+            injury_status = player["playerPoolEntry"]["player"].get("injuryStatus", "N/A")
             if player["lineupSlotId"] not in [20, 21]:
                 lineup_status = "Starting"
                 # print(f"Started {player["playerPoolEntry"]["player"]["fullName"]}.")

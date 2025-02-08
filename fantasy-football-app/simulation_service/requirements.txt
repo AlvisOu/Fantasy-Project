@@ -1,4 +1,4 @@
 mysql-connector-python==8.0.33
 redis==4.5.5
-sqlalchemy==2.0.30
+sqlalchemy==2.0.38
 fastapi[standard]==0.115.6

@@ -1,3 +1,7 @@
 .ipynb_checkpoints
 
 *.csv
+
+# Ignore Python cache files and directories
+__pycache__/
+*.py[cod]

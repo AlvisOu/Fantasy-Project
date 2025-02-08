@@ -1,11 +1,7 @@
 import requests, argparse
-from models import SessionLocal, PlayerData
-from db_setup import init_db
-from ..app.utils.lineup_fetcher import fetch_fantasy_lineup
-
-team_hashmap = {
-    '8': "Detroit Lions",
-}
+from simulation_service.database.models import SessionLocal, PlayerData
+from simulation_service.database.db_setup import init_db
+from simulation_service.app.utils.lineup_fetcher import fetch_fantasy_lineup
 
 def fetch_external_data(player_id):
     """Fetch player data from an external API given a player ID."""
@@ -40,30 +36,19 @@ def seed_database(player_ids):
     for id in player_ids:
         player = fetch_external_data(id)
 
-        existing_player = session.query(PlayerData).filter_by(id=player['id']).first()
+        player_record = PlayerData(
+            id=player['id'],
+            player_name=player['name'],
+            position=player['position'],
+            team=player['team'],
+            projected_score=player['projected_score'],
+            boom_probability=player['boom_probability'] if player['boom_probability'] is not None else 0.0,
+            bust_probability=player['bust_probability'] if player['bust_probability'] is not None else 0.0,
+            lineup_status=player_ids[id][0],
+            injury_status=player_ids[id][1],
+        )
 
-        if existing_player:
-            existing_player['projected_score'] = player['projected_score']
-            existing_player['boom_probability'] = player['boom_probability']
-            existing_player['bust_probability'] = player['bust_probability']
-            existing_player["lineup_status"] = player_ids[id][0]
-            existing_player["injury_status"] = player_ids[id][1]
-            print(f"Updated player data for {player['name']}")
-
-        else:
-            new_player = PlayerData(
-                id=player['id'],
-                player_name=player['name'],
-                position=player['position'],
-                team=player['team'],
-                projected_score=player['projected_score'],
-                boom_probability=player['boom_probability'],
-                bust_probability=player['bust_probability'],
-                lineup_status=player_ids[id][0],
-                injury_status=player_ids[id][1]
-            )
-            session.add(new_player)
-            print(f"Added player data for {player['name']}")
+        session.merge(player_record)
 
     session.commit()
     session.close()
@@ -73,8 +58,9 @@ def main():
     parser = argparse.ArgumentParser(description='Fetch a fantasy lineup.')
     parser.add_argument('team_id', type=int, help='The team ID of the fantasy lineup to fetch.')
     args = parser.parse_args()
+    res = fetch_fantasy_lineup(args.team_id)
+    seed_database(res)
 
-    seed_database(fetch_fantasy_lineup(args.team_id))
 
 if __name__ == "__main__":
     main()
