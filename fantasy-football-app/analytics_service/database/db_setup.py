@@ -1,4 +1,4 @@
-from simulation_service.database.models import Base, engine
+from analytics_service.database.models import Base, engine
 
 def init_db():
     """Initialize the database by creating all tables."""

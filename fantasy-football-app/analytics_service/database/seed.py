@@ -1,7 +1,6 @@
-import requests, argparse
-from simulation_service.database.models import SessionLocal, PlayerData
-from simulation_service.database.db_setup import init_db
-# from simulation_service.app.utils.lineup_fetcher import fetch_fantasy_lineup
+import requests
+from analytics_service.database.models import SessionLocal, PlayerData
+from analytics_service.database.db_setup import init_db
 
 def fetch_external_data(player_id):
     """Fetch player data from an external API given a player ID."""
