@@ -1,6 +1,11 @@
 import httpx, asyncio
-from config import YEAR, LEAGUE_ID, SWID, ESPN_S2
+# from config import YEAR, LEAGUE_ID, SWID, ESPN_S2
 import argparse
+
+LEAGUE_ID = "432959547"
+ESPN_S2 = 'AEAGstGzfVapLBUQjvAdZ6GzYXnNn%2F6zaJ1aKBaGfodSbZlAvSQCksL5cBPrQ2nvyg5B72c8fSTcMW1iUMMvVr9l9xF0WsaJz%2Fikact6HAV52u1AfskuMr1N9%2FxfssqkMhkJtnXMp3RxvVqMqvYI9GG%2FnpJBt7rTy%2BojPYRqFzOiodrozlh9%2F%2FwVppny6vLdnZMgV2RrJCbA4cGGTIWXHZJhMFFCuyrMGp6z3zoTAlGtif%2FRZCeD2gs4HQXBGPKtqzBPBeyBgiG1BJsBGmPUuv4PRKsEQibW%2Fs1ka3jCHfRUg87NAu%2B%2F6xJI1k7jX3VjVYU%3D'
+SWID = '{534A91A4-961E-4087-BE49-51DCDD461E9C}'
+YEAR = 2024
 
 async def fetch_fantasy_lineup(team_id):
     """
@@ -89,7 +94,7 @@ async def fetch_lineup_data(team_id):
 
     async def helper(player_id, player_info):
         player_data = await fetch_external_data(player_id)
-        player_data.update(player_info) # add lineup and injury status to player data
+        player_data.update({"lineup_status": player_info[0], "injury_status": player_info[1]}) # Add lineup and injury status
         lineup_data[player_id] = player_data
 
     # using asyncio.gather to make multiple requests concurrently by unpacking * the array of helper coroutines
