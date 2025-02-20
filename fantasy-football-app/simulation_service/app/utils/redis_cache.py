@@ -14,6 +14,10 @@ async def player_exists(redis, player_id: str):
     """Checks if a player's data is in Redis."""
     return await redis.exists(f"player:{player_id}")
 
+async def lineup_exists(redis, team_id: str):
+    """Checks if a team's lineup is in Redis."""
+    return await redis.exists(f"lineup:{team_id}")
+
 async def store_lineup(redis, team_id: str, lineup_data: dict):
     """Stores a team's lineup in Redis."""
     await redis.set(f"lineup:{team_id}", json.dumps(lineup_data), ex=86400)  # Expire in 24 hours
