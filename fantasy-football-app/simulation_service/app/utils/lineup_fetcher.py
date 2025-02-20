@@ -1,17 +1,12 @@
 import httpx, asyncio
-# from config import YEAR, LEAGUE_ID, SWID, ESPN_S2
+from config import YEAR, LEAGUE_ID, SWID, ESPN_S2
 import argparse
-
-LEAGUE_ID = "432959547"
-ESPN_S2 = 'AEAGstGzfVapLBUQjvAdZ6GzYXnNn%2F6zaJ1aKBaGfodSbZlAvSQCksL5cBPrQ2nvyg5B72c8fSTcMW1iUMMvVr9l9xF0WsaJz%2Fikact6HAV52u1AfskuMr1N9%2FxfssqkMhkJtnXMp3RxvVqMqvYI9GG%2FnpJBt7rTy%2BojPYRqFzOiodrozlh9%2F%2FwVppny6vLdnZMgV2RrJCbA4cGGTIWXHZJhMFFCuyrMGp6z3zoTAlGtif%2FRZCeD2gs4HQXBGPKtqzBPBeyBgiG1BJsBGmPUuv4PRKsEQibW%2Fs1ka3jCHfRUg87NAu%2B%2F6xJI1k7jX3VjVYU%3D'
-SWID = '{534A91A4-961E-4087-BE49-51DCDD461E9C}'
-YEAR = 2024
 
 async def fetch_fantasy_lineup(team_id):
     """
     Fetch the fantasy lineup for a given team ID.
     params: team_id: int
-    return: dict {player_id: (lineup_status: str, injury_status: str)}
+    return: dict {player_id: int: lineup_status: str}
     """
 
     line_up = {}
@@ -41,9 +36,9 @@ async def fetch_fantasy_lineup(team_id):
             if player["lineupSlotId"] == 20:
                 lineup_status = "Benched"
 
-            injury_status = player["playerPoolEntry"]["player"].get("injuryStatus", "N/A")
+            # injury_status = player["playerPoolEntry"]["player"].get("injuryStatus", "N/A")
             
-            line_up[player["playerId"]] = (lineup_status, injury_status)
+            line_up[player["playerId"]] = lineup_status
 
     return line_up
 
@@ -87,18 +82,18 @@ async def fetch_lineup_data(team_id):
     """
     Fetch the lineup data for a fantasy team.
     params: team_id: int
-    return: dict {player_id: {name: str, position: str, team: str, projected_score: float, bust_probability: float, boom_probability: float, lineup_status: str, injury_status: str}}
+    return: dict {player_id: {name: str, position: str, team: str, projected_score: float, bust_probability: float, boom_probability: float, lineup_status: str}}
     """
     lineup = await fetch_fantasy_lineup(team_id)
     lineup_data = {}
 
-    async def helper(player_id, player_info):
+    async def helper(player_id, lineup_status):
         player_data = await fetch_external_data(player_id)
-        player_data.update({"lineup_status": player_info[0], "injury_status": player_info[1]}) # Add lineup and injury status
+        player_data.update({"lineup_status": lineup_status}) # Add lineup status
         lineup_data[player_id] = player_data
 
     # using asyncio.gather to make multiple requests concurrently by unpacking * the array of helper coroutines
-    await asyncio.gather(*[helper(player_id, player_info) for player_id, player_info in lineup.items()])
+    await asyncio.gather(*[helper(player_id, lineup_status) for player_id, lineup_status in lineup.items()])
 
     return lineup_data
 
