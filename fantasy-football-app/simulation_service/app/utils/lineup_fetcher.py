@@ -2,7 +2,7 @@ import httpx, asyncio
 from config import YEAR, LEAGUE_ID, SWID, ESPN_S2
 import argparse
 
-async def fetch_fantasy_lineup(team_id):
+async def fetch_lineup_data(team_id):
     """
     Fetch the fantasy lineup for a given team ID.
     params: team_id: int
@@ -43,11 +43,11 @@ async def fetch_fantasy_lineup(team_id):
     return line_up
 
 
-async def fetch_external_data(player_id):
+async def fetch_player_data(player_id):
     """
     Fetch player data from an external API given a player ID.
     params: player_id: int
-    return: dict {name: str, position: str, team: str, projected_score: float, bust_probability: float, boom_probability: float}
+    return: dict {id: int, name: str, position: str, team: str, projected_score: float, bust_probability: float, boom_probability: float}
     """
     current_year = YEAR
     player = {}
@@ -68,6 +68,7 @@ async def fetch_external_data(player_id):
         player_data = player_response.json()[-1]
         classifier_data = classifier_response.json()[-2:]
 
+    player['id'] = player_id
     player['name'] = player_data['FULL_NAME']
     player['position'] = player_data['POSITION']
     player['team'] = player_data['TEAM']
@@ -78,31 +79,32 @@ async def fetch_external_data(player_id):
     return player
 
 
-async def fetch_lineup_data(team_id):
+async def fetch_lineup_and_player(team_id):
     """
-    Fetch the lineup data for a fantasy team.
+    Fetch lineup data and player data concurrently.
     params: team_id: int
-    return: dict {player_id: {name: str, position: str, team: str, projected_score: float, bust_probability: float, boom_probability: float, lineup_status: str}}
+    return: tuple (lineup: dict, players: list)
     """
-    lineup = await fetch_fantasy_lineup(team_id)
-    lineup_data = {}
+    lineup = await fetch_lineup_data(team_id)
+    players = []
 
-    async def helper(player_id, lineup_status):
-        player_data = await fetch_external_data(player_id)
-        player_data.update({"lineup_status": lineup_status}) # Add lineup status
-        lineup_data[player_id] = player_data
+    async def helper(player_id):
+        player_data = await fetch_player_data(player_id)
+        players.append(player_data)
 
     # using asyncio.gather to make multiple requests concurrently by unpacking * the array of helper coroutines
-    await asyncio.gather(*[helper(player_id, lineup_status) for player_id, lineup_status in lineup.items()])
+    await asyncio.gather(*[helper(player_id) for player_id in lineup.keys()])
 
-    return lineup_data
+    return (lineup, players)
 
 
 async def test_lineup(team_id):
     """Test function to fetch and display lineup data asynchronously."""
-    lineup_data = await fetch_lineup_data(team_id)
-    for player_id, player_info in lineup_data.items():
-        print(f"Player ID: {player_id} - {player_info}")
+    lineup, players = await fetch_lineup_and_player(team_id)
+    for id, status in lineup.items():
+        print(f"Player ID: {id} - {status}")
+    for player in players:
+        print(f"Player: {player}")
 
 
 def main():
